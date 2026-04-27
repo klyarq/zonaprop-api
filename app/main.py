@@ -400,6 +400,30 @@ def root():
 """
 
 
+@app.post("/upload", status_code=201)
+def upload_results(body: dict):
+    """Recibe resultados ya scrapeados desde el cliente local."""
+    url = body.get("url", "")
+    records = body.get("properties", [])
+    if not records:
+        raise HTTPException(400, "No hay propiedades para guardar")
+
+    job_id = str(uuid.uuid4())
+    supabase.table("scrape_jobs").insert({
+        "id": job_id,
+        "url": url,
+        "status": "done",
+        "total_properties": len(records),
+        "finished_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+    }).execute()
+
+    for r in records:
+        r["job_id"] = job_id
+    supabase.table("properties").insert(records).execute()
+
+    return {"job_id": job_id, "total_properties": len(records)}
+
+
 @app.post("/scrape", status_code=202)
 def start_scrape(body: ScrapeRequest, background_tasks: BackgroundTasks):
     if "zonaprop.com.ar" not in body.url:
