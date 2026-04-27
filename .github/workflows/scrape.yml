@@ -1,0 +1,25 @@
+name: ZonaProp Scraper
+
+on:
+  repository_dispatch:
+    types: [scrape]
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper and upload
+        env:
+          ZONAPROP_URL: ${{ github.event.client_payload.url }}
+          JOB_ID: ${{ github.event.client_payload.job_id }}
+          API_URL: ${{ secrets.API_URL }}
+        run: python scrape_github_action.py

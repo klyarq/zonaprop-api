@@ -400,6 +400,32 @@ def root():
 """
 
 
+@app.post("/jobs/{job_id}/complete", status_code=200)
+def complete_job(job_id: str, body: dict):
+    """GitHub Actions llama este endpoint cuando termina de scrapear."""
+    records = body.get("properties", [])
+    for r in records:
+        r["job_id"] = job_id
+    if records:
+        supabase.table("properties").insert(records).execute()
+    supabase.table("scrape_jobs").update({
+        "status": "done",
+        "total_properties": len(records),
+        "finished_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+    }).eq("id", job_id).execute()
+    return {"ok": True}
+
+
+@app.post("/jobs/{job_id}/fail", status_code=200)
+def fail_job(job_id: str, body: dict):
+    supabase.table("scrape_jobs").update({
+        "status": "error",
+        "error_msg": body.get("error", "Error desconocido"),
+        "finished_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+    }).eq("id", job_id).execute()
+    return {"ok": True}
+
+
 @app.post("/upload", status_code=201)
 def upload_results(body: dict):
     """Recibe resultados ya scrapeados desde el cliente local."""
@@ -436,7 +462,19 @@ def start_scrape(body: ScrapeRequest, background_tasks: BackgroundTasks):
         "status": "pending",
     }).execute()
 
-    background_tasks.add_task(run_scrape_job, job_id, body.url)
+    gh_token = os.environ.get("GITHUB_TOKEN")
+    gh_repo  = os.environ.get("GITHUB_REPO", "klyarq/zonaprop-api")
+
+    if gh_token:
+        import httpx
+        httpx.post(
+            f"https://api.github.com/repos/{gh_repo}/dispatches",
+            headers={"Authorization": f"Bearer {gh_token}", "Accept": "application/vnd.github+json"},
+            json={"event_type": "scrape", "client_payload": {"url": body.url, "job_id": job_id}},
+        )
+    else:
+        background_tasks.add_task(run_scrape_job, job_id, body.url)
+
     return {"job_id": job_id, "status": "pending"}
 
 
