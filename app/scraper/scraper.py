@@ -60,13 +60,14 @@ class Scraper:
     def scrap_website(self):
         page_number = 1
         estates = []
-        estates_scraped = 0
         estates_quantity = self.get_estates_quantity()
-        while estates_quantity > estates_scraped:
+        while len(estates) < estates_quantity:
             print(f'Page: {page_number}')
-            estates += self.scrap_page(page_number)
+            page_results = self.scrap_page(page_number)
+            if not page_results:
+                break
+            estates += page_results
             page_number += 1
-            estates_scraped = len(estates)
             time.sleep(1)
 
         return estates
@@ -76,14 +77,15 @@ class Scraper:
         page_url = f'{self.base_url}{HTML_EXTENSION}'
         page = self.browser.get_text(page_url)
         soup = BeautifulSoup(page, 'lxml')
-        soup.find_all('h1')[0].text
-
-        estates_quantity = re.findall(r'\d+\.?\d+', soup.find_all('h1')[0].text)[0]
-
-        estates_quantity = estates_quantity.replace('.', '')
-
-        estates_quantity = int(estates_quantity)
-        return estates_quantity
+        try:
+            h1_text = soup.find_all('h1')[0].text
+            matches = re.findall(r'\d[\d.]*', h1_text)
+            if not matches:
+                return 999  # fallback: scrape hasta que no haya más resultados
+            estates_quantity = int(matches[0].replace('.', ''))
+            return estates_quantity if estates_quantity > 0 else 999
+        except (IndexError, ValueError):
+            return 999
 
     def parse_estate(self, estate_post):
         # find any element with data-qa attribute (not just div - price is now h2)
