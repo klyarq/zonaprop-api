@@ -52,9 +52,9 @@ def run_scrape_job(job_id: str, url: str):
             "POSTING_CARD_GALLERY": "estado",
         }
 
-        numeric_cols = {"price_value", "m2_cubiertos", "m2_descubiertos", "m2_totales",
-                        "m2_ponderados", "valor_x_m2", "ambientes", "dormitorios",
-                        "banos", "cocheras", "expenses_value"}
+        float_cols   = {"price_value", "m2_cubiertos", "m2_descubiertos", "m2_totales",
+                        "m2_ponderados", "valor_x_m2", "expenses_value"}
+        integer_cols = {"ambientes", "dormitorios", "banos", "cocheras"}
 
         records = []
         for _, row in df.iterrows():
@@ -67,10 +67,14 @@ def run_scrape_job(job_id: str, url: str):
                         val = None
                     elif isinstance(val, str) and val.strip() == "":
                         val = None
-                    # Columnas numéricas: asegurar tipo correcto
-                    elif dest_col in numeric_cols and val is not None:
+                    elif dest_col in float_cols:
                         try:
                             val = float(val)
+                        except (ValueError, TypeError):
+                            val = None
+                    elif dest_col in integer_cols:
+                        try:
+                            val = int(float(val))
                         except (ValueError, TypeError):
                             val = None
                     record[dest_col] = val
