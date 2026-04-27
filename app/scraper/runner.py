@@ -52,14 +52,28 @@ def run_scrape_job(job_id: str, url: str):
             "POSTING_CARD_GALLERY": "estado",
         }
 
+        numeric_cols = {"price_value", "m2_cubiertos", "m2_descubiertos", "m2_totales",
+                        "m2_ponderados", "valor_x_m2", "ambientes", "dormitorios",
+                        "banos", "cocheras", "expenses_value"}
+
         records = []
         for _, row in df.iterrows():
             record = {"job_id": job_id}
             for src_col, dest_col in col_map.items():
                 if src_col in df.columns:
                     val = row[src_col]
-                    # Convertir NaN/None a None para JSON
-                    record[dest_col] = None if pd.isna(val) else val
+                    # Convertir NaN, None y strings vacíos a None
+                    if val is None or (isinstance(val, float) and pd.isna(val)):
+                        val = None
+                    elif isinstance(val, str) and val.strip() == "":
+                        val = None
+                    # Columnas numéricas: asegurar tipo correcto
+                    elif dest_col in numeric_cols and val is not None:
+                        try:
+                            val = float(val)
+                        except (ValueError, TypeError):
+                            val = None
+                    record[dest_col] = val
                 else:
                     record[dest_col] = None
             records.append(record)
