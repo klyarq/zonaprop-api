@@ -31,121 +31,295 @@ def root():
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KLY – ZonaProp Scraper</title>
+  <title>KLY — Análisis de Mercado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper:   #F0ECE4;
+      --paper-2: #E8E4DC;
+      --ink:     #18150F;
+      --ink-2:   #4A4740;
+      --ink-3:   #8C8880;
+      --ink-4:   #BCB9B2;
+      --yellow:  #EFE10F;
+      --rule:    rgba(24,21,15,.12);
+      --r:       4px;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f1117;
-      color: #e0e0e0;
+      font-family: "Inter Tight", system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 60px 20px;
     }
-    .card {
-      background: #1a1d27;
-      border: 1px solid #2a2d3a;
-      border-radius: 16px;
-      padding: 48px;
-      width: 100%;
-      max-width: 640px;
-    }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; color: #fff; }
-    .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 36px; }
-    label { font-size: 13px; color: #9ca3af; display: block; margin-bottom: 8px; }
-    input[type=text] {
-      width: 100%;
-      padding: 12px 16px;
-      background: #0f1117;
-      border: 1px solid #2a2d3a;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type=text]:focus { border-color: #FFC000; }
-    button {
-      margin-top: 16px;
-      width: 100%;
-      padding: 14px;
-      background: #FFC000;
-      color: #000;
-      font-weight: 700;
-      font-size: 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    button:hover { opacity: 0.9; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #status {
-      margin-top: 28px;
-      padding: 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      display: none;
-    }
-    .status-running { background: #1e2a1e; border: 1px solid #2d5a2d; color: #6fcf97; }
-    .status-error   { background: #2a1e1e; border: 1px solid #5a2d2d; color: #eb5757; }
-    .status-done    { background: #1e2420; border: 1px solid #2d5a40; color: #6fcf97; }
-    .download-btn {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 10px 24px;
-      background: #FFC000;
-      color: #000;
-      font-weight: 700;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .jobs-section { margin-top: 48px; width: 100%; max-width: 640px; }
-    .jobs-title { font-size: 14px; color: #6b7280; margin-bottom: 12px; }
-    .job-row {
-      background: #1a1d27;
-      border: 1px solid #2a2d3a;
-      border-radius: 8px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 64px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 13px;
+      padding: 0 32px;
     }
-    .job-url { color: #9ca3af; max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .badge {
-      padding: 3px 10px;
+    .nav-left { display: flex; align-items: center; gap: 14px; }
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-sep { color: var(--ink-4); font-size: 18px; }
+    .nav-sub { font-size: 13px; color: var(--ink-3); letter-spacing: 0.01em; }
+    .nav-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      background: var(--paper-2);
+      border: 1px solid var(--rule);
       border-radius: 999px;
+      padding: 3px 10px;
+    }
+
+    /* LAYOUT */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 64px 24px 80px;
+    }
+
+    .page-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--ink-2);
+      max-width: 520px;
+      margin-bottom: 48px;
+    }
+
+    /* FORM CARD */
+    .card {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+    .field-label {
       font-size: 12px;
       font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 8px;
+      display: block;
     }
-    .badge-done    { background: #1e3a2a; color: #6fcf97; }
-    .badge-running { background: #1e2a3a; color: #56b6f7; }
-    .badge-error   { background: #3a1e1e; color: #eb5757; }
-    .badge-pending { background: #2a2a1e; color: #f2c94c; }
-    .dl-link { color: #FFC000; text-decoration: none; font-weight: 600; margin-left: 12px; }
+    input[type=text] {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: var(--r);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type=text]::placeholder { color: var(--ink-4); }
+    input[type=text]:focus { border-color: var(--ink); }
+    .hint {
+      font-size: 12px;
+      color: var(--ink-4);
+      margin-top: 6px;
+      margin-bottom: 20px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 12px 24px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border-radius: var(--r);
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* STATUS */
+    #status {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: var(--r);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .status-running {
+      background: #FFFDE6;
+      border: 1px solid #EFE10F;
+      color: var(--ink-2);
+    }
+    .status-done {
+      background: #F0FAF4;
+      border: 1px solid #A8D5B5;
+      color: #1a4a2a;
+    }
+    .status-error {
+      background: #FFF0F0;
+      border: 1px solid #F5BABA;
+      color: #7a1a1a;
+    }
+    .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 10px 20px;
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .download-link:hover { opacity: 0.85; }
+
+    /* DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 0 0 32px;
+    }
+
+    /* JOBS TABLE */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 16px;
+    }
+    .job-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--rule);
+      gap: 16px;
+    }
+    .job-row:last-child { border-bottom: none; }
+    .job-url {
+      font-size: 13px;
+      color: var(--ink-2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .job-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .job-count { font-size: 12px; color: var(--ink-3); }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .badge-done    { background: #E6F5EC; color: #1a5c32; }
+    .badge-running { background: #FFFDE6; color: #7a6a00; }
+    .badge-error   { background: #FFF0F0; color: #7a1a1a; }
+    .badge-pending { background: var(--paper-2); color: var(--ink-3); }
+    .dl-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .empty { font-size: 13px; color: var(--ink-4); padding: 20px 0; }
+
+    /* SPINNER */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--paper);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>KLY · ZonaProp Scraper</h1>
-    <p class="subtitle">Pegá el link de búsqueda de ZonaProp y descargá el Excel con el valor por m²</p>
 
-    <label>Link de búsqueda ZonaProp</label>
-    <input type="text" id="urlInput" placeholder="https://www.zonaprop.com.ar/departamentos-venta-palermo.html">
-    <button id="scrapeBtn" onclick="startScrape()">Buscar y descargar Excel</button>
+  <nav>
+    <div class="nav-left">
+      <a href="https://kly-project.vercel.app" class="nav-logo">KLY</a>
+      <span class="nav-sep">|</span>
+      <span class="nav-sub">Buenos Aires · AR</span>
+    </div>
+    <span class="nav-tag">Análisis de Mercado</span>
+  </nav>
 
-    <div id="status"></div>
-  </div>
+  <main>
+    <p class="page-label">Herramienta interna</p>
+    <h1>Búsqueda de mercado</h1>
+    <p class="hero-desc">Pegá el link de búsqueda de ZonaProp para analizar las propiedades disponibles y obtener el ranking por valor de m² ponderado.</p>
 
-  <div class="jobs-section">
-    <p class="jobs-title">Búsquedas recientes</p>
-    <div id="jobsList"></div>
-  </div>
+    <div class="card">
+      <label class="field-label">Link de búsqueda ZonaProp</label>
+      <input type="text" id="urlInput"
+        placeholder="https://www.zonaprop.com.ar/departamentos-venta-palermo.html">
+      <p class="hint">El scraper va a recorrer todas las páginas del resultado — puede tardar 3–5 minutos.</p>
+      <button class="btn-primary" id="scrapeBtn" onclick="startScrape()">
+        Generar análisis →
+      </button>
+      <div id="status"></div>
+    </div>
+
+    <hr class="divider">
+
+    <p class="section-label">Búsquedas recientes</p>
+    <div id="jobsList"><p class="empty">Sin búsquedas todavía.</p></div>
+  </main>
 
   <script>
     let pollInterval = null;
@@ -153,10 +327,9 @@ def root():
     async function startScrape() {
       const url = document.getElementById('urlInput').value.trim();
       if (!url) return;
-
       const btn = document.getElementById('scrapeBtn');
       btn.disabled = true;
-      btn.textContent = 'Iniciando...';
+      btn.innerHTML = '<span class="spinner"></span> Iniciando...';
       showStatus('running', 'Scrapeando ZonaProp, esto puede tardar unos minutos...');
 
       const res = await fetch('/scrape', {
@@ -164,17 +337,15 @@ def root():
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
       });
-
       if (!res.ok) {
         const err = await res.json();
         showStatus('error', 'Error: ' + (err.detail || 'algo salió mal'));
         btn.disabled = false;
-        btn.textContent = 'Buscar y descargar Excel';
+        btn.innerHTML = 'Generar análisis →';
         return;
       }
-
       const { job_id } = await res.json();
-      btn.textContent = 'Scrapeando...';
+      btn.innerHTML = '<span class="spinner"></span> Analizando mercado...';
       pollJob(job_id);
     }
 
@@ -183,23 +354,20 @@ def root():
       pollInterval = setInterval(async () => {
         const res = await fetch('/jobs/' + job_id);
         const job = await res.json();
-
         if (job.status === 'done') {
           clearInterval(pollInterval);
           showStatus('done',
-            `✓ ${job.total_properties} propiedades encontradas.
-            <br><a class="download-btn" href="/jobs/${job_id}/excel" download>
-              ⬇ Descargar Excel
-            </a>`
+            '<strong>' + job.total_properties + ' propiedades analizadas.</strong> El Excel está ordenado por valor de m² ponderado (cubierto 100% · descubierto 30%).' +
+            '<br><a class="download-link" href="/jobs/' + job_id + '/excel" download>⬇ Descargar Excel</a>'
           );
           document.getElementById('scrapeBtn').disabled = false;
-          document.getElementById('scrapeBtn').textContent = 'Buscar y descargar Excel';
+          document.getElementById('scrapeBtn').innerHTML = 'Generar análisis →';
           loadJobs();
         } else if (job.status === 'error') {
           clearInterval(pollInterval);
-          showStatus('error', 'Error: ' + job.error_msg);
+          showStatus('error', 'Error al scrapear: ' + job.error_msg);
           document.getElementById('scrapeBtn').disabled = false;
-          document.getElementById('scrapeBtn').textContent = 'Buscar y descargar Excel';
+          document.getElementById('scrapeBtn').innerHTML = 'Generar análisis →';
         }
       }, 10000);
     }
@@ -215,15 +383,13 @@ def root():
       const res = await fetch('/jobs');
       const jobs = await res.json();
       const el = document.getElementById('jobsList');
-      if (!jobs.length) { el.innerHTML = '<p style="color:#6b7280;font-size:13px">Sin búsquedas todavía</p>'; return; }
+      if (!jobs.length) { el.innerHTML = '<p class="empty">Sin búsquedas todavía.</p>'; return; }
       el.innerHTML = jobs.slice(0, 10).map(j => {
-        const badge = `<span class="badge badge-${j.status}">${j.status}</span>`;
-        const dl = j.status === 'done' ? `<a class="dl-link" href="/jobs/${j.id}/excel" download>Excel</a>` : '';
-        const props = j.total_properties ? `<span style="color:#6b7280;font-size:12px;margin-left:8px">${j.total_properties} prop.</span>` : '';
-        return `<div class="job-row">
-          <span class="job-url">${j.url}</span>
-          <span style="display:flex;align-items:center">${badge}${props}${dl}</span>
-        </div>`;
+        const badge = '<span class="badge badge-' + j.status + '">' + j.status + '</span>';
+        const dl = j.status === 'done' ? '<a class="dl-link" href="/jobs/' + j.id + '/excel" download>Descargar</a>' : '';
+        const count = j.total_properties ? '<span class="job-count">' + j.total_properties + ' prop.</span>' : '';
+        const shortUrl = j.url.replace('https://www.zonaprop.com.ar/', '').replace('.html','');
+        return '<div class="job-row"><span class="job-url">' + shortUrl + '</span><span class="job-meta">' + count + badge + dl + '</span></div>';
       }).join('');
     }
 
